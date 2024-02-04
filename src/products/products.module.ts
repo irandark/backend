@@ -10,3 +10,5 @@ import { Product } from './entities/product.entity';
   providers: [ProductsService],
 })
 export class ProductsModule {}
+
+//FIXME rename products to product

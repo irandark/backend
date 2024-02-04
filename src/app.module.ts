@@ -6,9 +6,13 @@ import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './products/products.module';
 import { ConfigModule } from '@nestjs/config';
+import { CategoryModule } from './category/category.module';
+import { SubcategoryModule } from './subcategory/subcategory.module';
+import { Category } from './category/entities/category.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Category]),
     ConfigModule.forRoot(),
     UpdateProductsModule,
     MulterModule.register({
@@ -25,6 +29,8 @@ import { ConfigModule } from '@nestjs/config';
       synchronize: true,
     }),
     ProductsModule,
+    CategoryModule,
+    SubcategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -11,6 +11,8 @@ export class UpdateProductsService {
       workbook.Sheets[workbook.SheetNames[0]],
     );
 
+    console.log(json);
+
     const productsFromXsl = this.convertJsonToMap(json);
 
     const productsFromDb = await this.productsService.findAll();
@@ -29,6 +31,8 @@ export class UpdateProductsService {
     json.forEach((el) => {
       products.set(el['Остатки товаров на складах'], el.__EMPTY_5);
     });
+
+    console.log(products);
 
     return products;
   }
