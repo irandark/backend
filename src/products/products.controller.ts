@@ -22,6 +22,18 @@ export class ProductsController {
     return await this.productsService.create(createProductDto);
   }
 
+  /*FIXME: add new route to get products by category and subcategory 
+  @Get()
+  async getProductsByCategoryAndSubcategory(
+    @Param('categoryId') categoryId: number,
+    @Param('subcategoryId') subcategoryId: number,
+  ) {
+    return this.productsService.getProductsByCategoryAndSubcategory(
+      categoryId,
+      subcategoryId,
+    );
+  } */
+
   @Get()
   async findAll() {
     return await this.productsService.findAll();
@@ -39,13 +51,13 @@ export class ProductsController {
     }
   }
 
-  @Patch(':id')
+  /*   @Patch(':id')
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
   ): Promise<Product> {
     return await this.productsService.update(+id, updateProductDto);
-  }
+  } */
 
   @Delete(':id')
   async remove(@Param('id') id: string) {

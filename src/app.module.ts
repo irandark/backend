@@ -27,6 +27,7 @@ import { Category } from './category/entities/category.entity';
       database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      logging: false,
     }),
     ProductsModule,
     CategoryModule,

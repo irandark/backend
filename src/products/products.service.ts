@@ -7,31 +7,83 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { Category } from 'src/category/entities/category.entity';
+import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Subcategory)
+    private readonly subcategoryRepository: Repository<Subcategory>,
   ) {}
 
-  async create(createProductDto: CreateProductDto): Promise<Product> {
+  async create(createProductDto: CreateProductDto) {
     try {
-      const product = this.productRepository.create(createProductDto);
-      return await this.productRepository.save(product);
+      const category = await this.categoryRepository.findOneBy({
+        id: createProductDto.categoryId,
+      });
+      if (!category) {
+        throw new BadRequestException(
+          `Category with id ${createProductDto.categoryId} not found`,
+        );
+      }
+
+      const subcategories = await this.subcategoryRepository
+        .createQueryBuilder('subcategory')
+        .where('subcategory.id IN (:...subcategoryIds)', {
+          subcategoryIds: createProductDto.subcategoryIds,
+        })
+        .getMany();
+
+      if (!subcategories) {
+        throw new BadRequestException(
+          `Subcategory with id ${createProductDto.subcategoryIds} not found`,
+        );
+      }
+
+      console.log(subcategories);
+
+      const product = this.productRepository.create({
+        article: createProductDto.article,
+        name: createProductDto.name,
+        price: createProductDto.price,
+        subcategories,
+        category,
+      });
+
+      await this.productRepository.save(product);
+
+      console.log(product);
+
+      return product;
     } catch (error) {
-      throw new BadRequestException(
-        `Product with article ${createProductDto.article} already exists`,
-      );
+      throw new BadRequestException(error);
     }
   }
 
-  async findAll() {
+  async getProductsByCategoryAndSubcategory(
+    categoryId: number,
+    subcategoryId: number,
+  ): Promise<Product[]> {
+    return this.productRepository
+      .createQueryBuilder('product')
+      .innerJoin('product.subcategories', 'subcategory')
+      .innerJoin('subcategory.category', 'category')
+      .where('category.id = :categoryId', { categoryId })
+      .andWhere('subcategory.id = :subcategoryId', { subcategoryId })
+      .getMany();
+  }
+
+  async findAll(): Promise<Product[]> {
     return await this.productRepository.find();
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({ where: { id } });
 
     if (!product) {
@@ -44,9 +96,9 @@ export class ProductsService {
   async update(
     id: number,
     updateProductDto: UpdateProductDto,
-  ): Promise<Product> {
-    await this.productRepository.update(id, updateProductDto);
-    return await this.productRepository.findOne({ where: { id } });
+  ) /* : Promise<Product> */ {
+    /* await this.productRepository.update(id, updateProductDto);
+    return await this.productRepository.findOne({ where: { id } }); */
   }
 
   async remove(id: number) {

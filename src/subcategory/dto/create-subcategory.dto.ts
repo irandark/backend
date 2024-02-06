@@ -1,1 +1,4 @@
-export class CreateSubcategoryDto {}
+export class CreateSubcategoryDto {
+  id: number;
+  name: string;
+}
