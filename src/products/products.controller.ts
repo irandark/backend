@@ -12,6 +12,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
+import { FilterProductsDto } from './dto/filter-products.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -22,17 +23,12 @@ export class ProductsController {
     return await this.productsService.create(createProductDto);
   }
 
-  /*FIXME: add new route to get products by category and subcategory 
-  @Get()
+  @Post('filtered')
   async getProductsByCategoryAndSubcategory(
-    @Param('categoryId') categoryId: number,
-    @Param('subcategoryId') subcategoryId: number,
+    @Body() filterDto: FilterProductsDto,
   ) {
-    return this.productsService.getProductsByCategoryAndSubcategory(
-      categoryId,
-      subcategoryId,
-    );
-  } */
+    return this.productsService.getProductsByCategoryAndSubcategory(filterDto);
+  }
 
   @Get()
   async findAll() {
@@ -51,13 +47,13 @@ export class ProductsController {
     }
   }
 
-  /*   @Patch(':id')
+  @Patch(':id')
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
   ): Promise<Product> {
     return await this.productsService.update(+id, updateProductDto);
-  } */
+  }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {

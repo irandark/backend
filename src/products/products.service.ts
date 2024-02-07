@@ -10,6 +10,7 @@ import { Product } from './entities/product.entity';
 import { In, Repository } from 'typeorm';
 import { Category } from 'src/category/entities/category.entity';
 import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
+import { FilterProductsDto } from './dto/filter-products.dto';
 
 @Injectable()
 export class ProductsService {
@@ -46,8 +47,6 @@ export class ProductsService {
         );
       }
 
-      console.log(subcategories);
-
       const product = this.productRepository.create({
         article: createProductDto.article,
         name: createProductDto.name,
@@ -58,8 +57,6 @@ export class ProductsService {
 
       await this.productRepository.save(product);
 
-      console.log(product);
-
       return product;
     } catch (error) {
       throw new BadRequestException(error);
@@ -67,16 +64,29 @@ export class ProductsService {
   }
 
   async getProductsByCategoryAndSubcategory(
-    categoryId: number,
-    subcategoryId: number,
+    filterDto: FilterProductsDto,
   ): Promise<Product[]> {
-    return this.productRepository
+    const {
+      categoryId,
+      subcategoryIds,
+      orderBy = 'price',
+      orderDirection = 'ASC',
+    } = filterDto;
+    const query = this.productRepository
       .createQueryBuilder('product')
       .innerJoin('product.subcategories', 'subcategory')
       .innerJoin('subcategory.category', 'category')
-      .where('category.id = :categoryId', { categoryId })
-      .andWhere('subcategory.id = :subcategoryId', { subcategoryId })
-      .getMany();
+      .where('category.id = :categoryId', { categoryId });
+
+    if (subcategoryIds && subcategoryIds.length > 0) {
+      query.andWhere('subcategory.id IN (:...subcategoryIds)', {
+        subcategoryIds,
+      });
+    }
+
+    query.orderBy(`product.${orderBy}`, orderDirection);
+
+    return query.getMany();
   }
 
   async findAll(): Promise<Product[]> {
@@ -96,9 +106,9 @@ export class ProductsService {
   async update(
     id: number,
     updateProductDto: UpdateProductDto,
-  ) /* : Promise<Product> */ {
-    /* await this.productRepository.update(id, updateProductDto);
-    return await this.productRepository.findOne({ where: { id } }); */
+  ): Promise<Product> {
+    await this.productRepository.update(id, updateProductDto);
+    return await this.productRepository.findOne({ where: { id } });
   }
 
   async remove(id: number) {
