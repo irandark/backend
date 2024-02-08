@@ -11,6 +11,8 @@ import { SubcategoryModule } from './subcategory/subcategory.module';
 import { Category } from './category/entities/category.entity';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { JwtAuthService } from './auth/jwt.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -36,8 +38,9 @@ import { UserModule } from './user/user.module';
     SubcategoryModule,
     AuthModule,
     UserModule,
+    JwtModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtAuthService],
 })
 export class AppModule {}

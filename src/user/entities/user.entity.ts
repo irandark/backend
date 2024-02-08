@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Entity()
 export class User {
@@ -9,5 +10,11 @@ export class User {
   email: string;
 
   @Column()
+  username: string;
+
+  @Column()
   password: string;
+
+  @Column({ nullable: true })
+  refreshToken: string;
 }
