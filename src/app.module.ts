@@ -1,3 +1,4 @@
+import { AuthService } from './auth/auth.service';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -11,12 +12,13 @@ import { SubcategoryModule } from './subcategory/subcategory.module';
 import { Category } from './category/entities/category.entity';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { JwtAuthService } from './auth/jwt.service';
 import { JwtModule } from '@nestjs/jwt';
+import { UserService } from './user/user.service';
+import { User } from './user/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Category]),
+    TypeOrmModule.forFeature([Category, User]),
     ConfigModule.forRoot(),
     UpdateProductsModule,
     MulterModule.register({
@@ -41,6 +43,6 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule,
   ],
   controllers: [AppController],
-  providers: [AppService, JwtAuthService],
+  providers: [AppService],
 })
 export class AppModule {}

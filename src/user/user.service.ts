@@ -10,21 +10,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { JwtAuthService } from 'src/auth/jwt.service';
+import { ResponseUserDto } from './dto/response-user.dto';
+import { AuthService } from 'src/auth/auth.service';
+import { TokenService } from 'src/auth/token.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @Inject(JwtAuthService)
-    private jwtService: JwtAuthService,
+    private readonly tokenService: TokenService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
-      console.log(hashedPassword);
 
       const user = this.userRepository.create({
         username: createUserDto.username,
@@ -33,18 +32,11 @@ export class UserService {
       });
 
       const { accessToken, refreshToken } =
-        await this.jwtService.generateTokens(user);
+        await this.tokenService.generateTokens(user, 'both');
 
       await this.saveRefreshToken(user, refreshToken);
 
-      return {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-        },
-        token: accessToken,
-      };
+      return ResponseUserDto.buildResponse(user, accessToken);
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException(
@@ -57,7 +49,17 @@ export class UserService {
     }
   }
 
-  private async saveRefreshToken(user: User, refreshToken: string) {
+  async findByEmail(email: string): Promise<User> {
+    return this.userRepository.findOne({ where: { email } });
+  }
+
+  async findById(userId: number): Promise<User> {
+    return await this.userRepository.findOne({
+      where: { id: userId },
+    });
+  }
+
+  async saveRefreshToken(user: User, refreshToken: string) {
     user.refreshToken = refreshToken;
     await this.userRepository.save(user);
   }

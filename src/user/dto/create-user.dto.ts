@@ -5,3 +5,5 @@ export class CreateUserDto {
 
   password: string;
 }
+
+//FIXME: create validation
