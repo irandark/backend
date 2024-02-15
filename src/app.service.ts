@@ -1,13 +1,17 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Category } from './category/entities/category.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
+import { Warehouse } from './products/entities/warehouse.entity';
 
 @Injectable()
 export class AppService implements OnModuleInit {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+
+    @InjectRepository(Warehouse)
+    private warehouseRepository: Repository<Warehouse>,
 
     @InjectDataSource()
     private dataSource: DataSource,
@@ -18,16 +22,15 @@ export class AppService implements OnModuleInit {
   }
   private async createInitialCategories() {
     const initialCategories = [{ name: 'Велосипеды' }, { name: 'Аксесуары' }];
+    const initialWarehouses = [
+      { name: 'Томилино' },
+      { name: 'Ногинск' },
+      { name: 'Янгеля' },
+      { name: 'Очаково' },
+    ];
 
-    initialCategories.forEach(async (categoryData) => {
-      const categoryExists = await this.categoryRepository.findOne({
-        where: { name: categoryData.name },
-      });
-
-      if (!categoryExists) {
-        await this.categoryRepository.save(categoryData);
-      }
-    });
+    await this.saveInitialColumns(initialCategories, this.categoryRepository);
+    await this.saveInitialColumns(initialWarehouses, this.warehouseRepository);
   }
 
   async resetDatabase() {
@@ -45,6 +48,28 @@ export class AppService implements OnModuleInit {
         await queryRunner.manager.query(
           `TRUNCATE TABLE "${tableName}" CASCADE;`,
         );
+        const sequences = await queryRunner.manager.query(`
+        SELECT 'SELECT SETVAL(' ||
+               quote_literal(quote_ident(PGT.schemaname) || '.' || quote_ident(S.relname)) ||
+               ', COALESCE(MAX(' || quote_ident(C.attname) || '), 1), false) FROM ' ||
+               quote_ident(PGT.schemaname) || '.' || quote_ident(T.relname) || ';'
+        FROM pg_class AS S,
+             pg_depend AS D,
+             pg_class AS T,
+             pg_attribute AS C,
+             pg_tables AS PGT
+        WHERE S.relkind = 'S'
+          AND S.oid = D.objid
+          AND D.refobjid = T.oid
+          AND D.refobjid = C.attrelid
+          AND D.refobjsubid = C.attnum
+          AND T.relname = PGT.tablename
+          AND S.relname NOT LIKE 'pg_%';
+      `);
+
+        for (const seq of sequences) {
+          await queryRunner.manager.query(seq['?column?']);
+        }
       }
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -52,6 +77,25 @@ export class AppService implements OnModuleInit {
       throw error;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  private async saveInitialColumns<T extends { name: string }>(
+    initialColumns: T[],
+    repository: Repository<T>,
+  ) {
+    const savePromises = initialColumns.map(async (data) => {
+      const exist = await repository.findOne({
+        where: { name: data.name } as FindOptionsWhere<T>,
+      });
+      if (!exist) {
+        return repository.save(data);
+      }
+    });
+    try {
+      await Promise.all(savePromises);
+    } catch (error) {
+      console.log(error);
     }
   }
 }

@@ -30,7 +30,6 @@ export class AuthController {
       user: User;
     },
   ) {
-    //FIXME: получаю сущность юзера, не могу брать инфу из полей
     return this.authService.refreshToken(req.user);
   }
 }

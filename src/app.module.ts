@@ -13,12 +13,12 @@ import { Category } from './category/entities/category.entity';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
-import { UserService } from './user/user.service';
 import { User } from './user/entities/user.entity';
+import { Warehouse } from './products/entities/warehouse.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Category, User]),
+    TypeOrmModule.forFeature([Category, User, Warehouse]),
     ConfigModule.forRoot(),
     UpdateProductsModule,
     MulterModule.register({
@@ -33,7 +33,7 @@ import { User } from './user/entities/user.entity';
       database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
-      logging: false,
+      logging: true,
     }),
     ProductsModule,
     CategoryModule,

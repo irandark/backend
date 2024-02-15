@@ -21,16 +21,5 @@ export class Subcategory {
   category: Category;
 
   @ManyToMany(() => Product, (product) => product.subcategories)
-  @JoinTable({
-    name: 'productSubcategory',
-    joinColumn: {
-      name: 'subcategoryId',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'productId',
-      referencedColumnName: 'id',
-    },
-  })
   products: Product[];
 }

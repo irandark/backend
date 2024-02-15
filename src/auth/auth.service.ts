@@ -47,17 +47,21 @@ export class AuthService {
   }
 
   async refreshToken(user: User) {
-    this.verifyRefreshToken(user);
+    //FIXME обработать исключения правильно, мне не нравится как это выглядит
+    const isVerified = await this.verifyRefreshToken(user);
+
+    if (!isVerified) {
+      throw new UnauthorizedException('Срок действия refresh token истек');
+    }
 
     const { accessToken } = await this.tokenService.generateTokens(
       user,
       'access',
     );
-
     return accessToken;
   }
 
-  private async verifyRefreshToken(user: User) {
+  private async verifyRefreshToken(user: User): Promise<boolean> {
     try {
       const decoded = this.jwtService.verify<DecodedJwt>(user.refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET_TOKEN,
@@ -69,6 +73,7 @@ export class AuthService {
         );
         await this.userService.saveRefreshToken(user, refreshToken);
       }
+      return true;
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
         throw new UnauthorizedException('Срок действия refresh token истек');
