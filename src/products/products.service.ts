@@ -84,6 +84,7 @@ export class ProductsService {
             brakeName: createProductDto.brakeName,
             weight: createProductDto.weight,
             imageUrl: createProductDto.imageUrl,
+            features: createProductDto.features,
             category: category,
             subcategories: subcategories,
           });

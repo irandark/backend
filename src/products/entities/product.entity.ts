@@ -86,5 +86,8 @@ export class Product {
   weight: number | null;
 
   @nullableStringColumn()
+  features: string | null;
+
+  @nullableStringColumn()
   imageUrl: string | null;
 }

@@ -61,6 +61,9 @@ export class CreateProductDto {
   @IsString()
   brakeName: string;
 
+  @IsString()
+  features: string;
+
   @IsNumber()
   weight: number;
 
