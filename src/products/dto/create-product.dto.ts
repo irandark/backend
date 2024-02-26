@@ -7,7 +7,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ProductVariantDto } from './product-variant.dto';
-import { StockInfoDto } from './stock-info.dto';
 import { Type } from 'class-transformer';
 
 export class CreateProductDto {
@@ -64,6 +63,9 @@ export class CreateProductDto {
 
   @IsNumber()
   weight: number;
+
+  @IsString()
+  imageUrl: string;
 
   @IsArray()
   @ValidateNested()

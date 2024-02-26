@@ -25,6 +25,11 @@ export class SubcategoryController {
     return await this.subcategoryService.findAll();
   }
 
+  @Get('category/:id')
+  async getSubcategoriesByCategoryId(@Param('id') id: string) {
+    return await this.subcategoryService.getSubcategoriesByCategoryId(+id);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.subcategoryService.findOne(+id);

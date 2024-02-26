@@ -13,18 +13,12 @@ import { nullableStringColumn } from '../lib/nullableStringColumn';
 
 @Entity()
 export class ProductVariant {
-  constructor() {
-    this.photos = [];
-  }
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   @Index({ unique: true })
   article: string;
-
-  @Column('text', { array: true, nullable: true })
-  photos: string[] | null;
 
   @nullableStringColumn()
   wheelDiameter: string | null;

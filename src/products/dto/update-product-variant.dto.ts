@@ -3,7 +3,6 @@ import { Stock } from '../entities/stock.entity';
 
 export class UpdateProductVariantDto {
   price: number;
-  photos: string[];
   wheelDiameter: string;
   color: string;
   frameSize: string;

@@ -35,6 +35,7 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto) {
+    console.log(createProductDto);
     try {
       const category = await this.categoryRepository.findOneBy({
         id: createProductDto.categoryId,
@@ -58,43 +59,52 @@ export class ProductsService {
         );
       }
 
-      await this.dataSource.transaction(async (manager) => {
-        const product = manager.create(Product, {
+      const product = await this.productRepository.findOne({
+        where: {
           name: createProductDto.name,
-          brand: createProductDto.brand,
-          frameMaterial: createProductDto.frameMaterial,
-          modelYear: createProductDto.modelYear,
-          forkType: createProductDto.forkType,
-          forkName: createProductDto.forkName,
-          numberOfSpeeds: createProductDto.numberOfSpeeds,
-          rearDerailleur: createProductDto.rearDerailleur,
-          frontDerailleur: createProductDto.frontDerailleur,
-          shifters: createProductDto.shifters,
-          system: createProductDto.system,
-          cassette: createProductDto.cassette,
-          brakeType: createProductDto.brakeType,
-          brakeName: createProductDto.brakeName,
-          weight: createProductDto.weight,
-          category: category,
-          subcategories: subcategories,
-        });
+        },
+      });
 
-        await manager.save(product);
-
-        for (const variantData of createProductDto.productVariants) {
-          const variant = manager.create(ProductVariant, {
-            product: product,
-            article: variantData.article,
-            color: variantData.color,
-            frameSize: variantData.frameSize,
-            photos: variantData.photos,
-            wheelDiameter: variantData.wheelDiameter,
-            price: variantData.price,
+      if (!product) {
+        await this.dataSource.transaction(async (manager) => {
+          const product = manager.create(Product, {
+            name: createProductDto.name,
+            brand: createProductDto.brand,
+            frameMaterial: createProductDto.frameMaterial,
+            modelYear: createProductDto.modelYear,
+            forkType: createProductDto.forkType,
+            forkName: createProductDto.forkName,
+            numberOfSpeeds: createProductDto.numberOfSpeeds,
+            rearDerailleur: createProductDto.rearDerailleur,
+            frontDerailleur: createProductDto.frontDerailleur,
+            shifters: createProductDto.shifters,
+            system: createProductDto.system,
+            cassette: createProductDto.cassette,
+            brakeType: createProductDto.brakeType,
+            brakeName: createProductDto.brakeName,
+            weight: createProductDto.weight,
+            imageUrl: createProductDto.imageUrl,
+            category: category,
+            subcategories: subcategories,
           });
 
-          await manager.save(variant);
-        }
-      });
+          await manager.save(product);
+
+          for (const variantData of createProductDto.productVariants) {
+            const variant = manager.create(ProductVariant, {
+              product: product,
+              article: variantData.article,
+              color: variantData.color,
+              frameSize: variantData.frameSize,
+              wheelDiameter: variantData.wheelDiameter,
+              price: variantData.price,
+            });
+
+            await manager.save(variant);
+          }
+        });
+      } else {
+      }
     } catch (error) {
       console.log(error);
       throw new BadRequestException(error.detail);
@@ -111,7 +121,10 @@ export class ProductsService {
       orderDirection = 'ASC',
     } = filterDto;
 
+    console.log(filterDto);
+
     const safeOrderBy = this.getSafeOrderByValue(orderBy);
+    orderDirection.toUpperCase();
 
     const query = this.productRepository
       .createQueryBuilder('product')
@@ -159,6 +172,10 @@ export class ProductsService {
     }
 
     return product;
+  }
+
+  async getProductsByName(name: string): Promise<Product[]> {
+    return await this.productRepository.findBy({ name });
   }
 
   async update(
@@ -213,6 +230,7 @@ export class ProductsService {
       product.category = category;
       product.brand = updateProductDto.brand;
       product.name = updateProductDto.name;
+      product.imageUrl = updateProductDto.imageUrl;
 
       await manager.save(product);
 
@@ -231,7 +249,6 @@ export class ProductsService {
       productVariant.wheelDiameter =
         updateProductDto.productVariant.wheelDiameter;
       productVariant.price = updateProductDto.productVariant.price;
-      productVariant.photos = updateProductDto.productVariant.photos;
 
       await manager.save(productVariant);
 

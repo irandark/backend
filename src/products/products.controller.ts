@@ -34,6 +34,11 @@ export class ProductsController {
     return this.productsService.getProductsByCategoryAndSubcategory(filterDto);
   }
 
+  @Post('name')
+  async getProductsByName(@Body('name') name: string) {
+    return await this.productsService.getProductsByName(name);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll() {

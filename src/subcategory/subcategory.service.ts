@@ -26,6 +26,12 @@ export class SubcategoryService {
     return await this.subcategoryRepository.find();
   }
 
+  async getSubcategoriesByCategoryId(id: number): Promise<Subcategory[]> {
+    return await this.subcategoryRepository.find({
+      where: { category: { id } },
+    });
+  }
+
   async findOne(id: number): Promise<Subcategory> {
     const subcategory = await this.subcategoryRepository.findOne({
       where: { id },
