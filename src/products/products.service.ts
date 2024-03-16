@@ -37,6 +37,13 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto) {
     console.log(createProductDto);
     try {
+      if (
+        createProductDto.productVariants.length === 0 ||
+        !createProductDto.productVariants
+      ) {
+        throw new BadRequestException('Product variants not found');
+      }
+
       const category = await this.categoryRepository.findOneBy({
         id: createProductDto.categoryId,
       });
@@ -141,6 +148,9 @@ export class ProductsService {
       });
     }
 
+    query.leftJoinAndSelect('product.subcategories', 'subcategories');
+    query.leftJoinAndSelect('product.category', 'categoryId');
+
     query.orderBy(`variant.${safeOrderBy}`, orderDirection);
 
     return query.getMany();
@@ -165,7 +175,12 @@ export class ProductsService {
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['productVariants', 'productVariants.stockItems'],
+      relations: [
+        'productVariants',
+        'productVariants.stockItems',
+        'subcategories',
+        'category',
+      ],
     });
 
     if (!product) {
@@ -183,14 +198,24 @@ export class ProductsService {
     id: number,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    console.log(updateProductDto);
     return await this.dataSource.transaction(async (manager) => {
-      const product = await manager.findOne(Product, { where: { id } });
+      const product = await manager.findOne(Product, {
+        where: { id },
+        relations: [
+          'productVariants',
+          'productVariants.stockItems',
+          'subcategories',
+          'category',
+        ],
+      });
       if (!product) {
         throw new NotFoundException(`Товар с id ${id} не найден`);
       }
 
-      let category: Category, subcategories: Subcategory[];
+      console.log(product);
+
+      let category: Category;
+      let subcategories: Subcategory[];
 
       if (updateProductDto.categoryId) {
         category = await manager.findOne(Category, {
@@ -214,6 +239,8 @@ export class ProductsService {
           .getMany();
       }
 
+      console.log('subcategories', subcategories);
+
       product.brakeName = updateProductDto.brakeName;
       product.brakeType = updateProductDto.brakeType;
       product.cassette = updateProductDto.cassette;
@@ -235,23 +262,49 @@ export class ProductsService {
 
       await manager.save(product);
 
-      console.log(updateProductDto);
-
-      const productVariant = await manager.findOne(ProductVariant, {
-        where: { id: updateProductDto.productVariantId },
-      });
-
-      if (!productVariant) {
-        throw new NotFoundException(`ProductVariant с id ${id} не найден`);
+      for (const variantData of updateProductDto.productVariants) {
+        const concurrencyVariant = await manager.findOne(ProductVariant, {
+          where: {
+            article: variantData.article,
+          },
+        });
+        if (concurrencyVariant) {
+          await manager.update(ProductVariant, concurrencyVariant.id, {
+            product: product,
+            article: variantData.article,
+            color: variantData.color,
+            frameSize: variantData.frameSize,
+            wheelDiameter: variantData.wheelDiameter,
+            price: variantData.price,
+          });
+        } else {
+          const newVariant = manager.create(ProductVariant, {
+            product: product,
+            article: variantData.article,
+            color: variantData.color,
+            frameSize: variantData.frameSize,
+            wheelDiameter: variantData.wheelDiameter,
+            price: variantData.price,
+          });
+          await manager.save(newVariant);
+        }
       }
 
-      productVariant.color = updateProductDto.productVariant.color;
-      productVariant.frameSize = updateProductDto.productVariant.frameSize;
-      productVariant.wheelDiameter =
-        updateProductDto.productVariant.wheelDiameter;
-      productVariant.price = updateProductDto.productVariant.price;
+      const variants = await manager.findBy(ProductVariant, {
+        product: product,
+      });
 
-      await manager.save(productVariant);
+      for (const variant of variants) {
+        if (
+          !updateProductDto.productVariants.find(
+            (v) => v.article === variant.article,
+          )
+        ) {
+          await manager.remove(variant);
+        }
+      }
+
+      //если артикул не менялся, то ничгео не делаем, если артикул поменялся, то необходимо обновить остатки
 
       return product;
     });

@@ -19,7 +19,9 @@ export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToMany(() => Subcategory, (subcategory) => subcategory.products)
+  @ManyToMany(() => Subcategory, (subcategory) => subcategory.products, {
+    cascade: true,
+  })
   @JoinTable({
     name: 'product_subcategory',
     joinColumn: {
@@ -33,11 +35,13 @@ export class Product {
   })
   subcategories: Subcategory[];
 
-  @ManyToOne(() => Category)
+  @ManyToOne(() => Category, { cascade: true })
   @JoinColumn({ name: 'categoryId' })
   category: Category;
 
-  @OneToMany(() => ProductVariant, (variant) => variant.product)
+  @OneToMany(() => ProductVariant, (variant) => variant.product, {
+    cascade: true,
+  })
   productVariants: ProductVariant[];
 
   @nullableStringColumn()

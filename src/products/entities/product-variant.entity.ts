@@ -32,7 +32,7 @@ export class ProductVariant {
   @Column()
   price: number;
 
-  @ManyToOne(() => Product, { cascade: true })
+  @ManyToOne(() => Product, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product: Product;
 
