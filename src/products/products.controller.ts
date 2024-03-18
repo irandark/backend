@@ -21,9 +21,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  async create(
-    @Body() createProductDto: CreateProductDto,
-  ) /* : Promise<Product> */ {
+  async create(@Body() createProductDto: CreateProductDto) {
     await this.productsService.create(createProductDto);
   }
 

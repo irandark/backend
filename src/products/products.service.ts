@@ -12,8 +12,8 @@ import { Category } from 'src/category/entities/category.entity';
 import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 import { FilterProductsDto } from './dto/filter-products.dto';
 import { ProductVariant } from './entities/product-variant.entity';
-import { Stock } from './entities/stock.entity';
-import { Warehouse } from './entities/warehouse.entity';
+import { Stock } from '../warehouse/entities/stock.entity';
+import { Warehouse } from '../warehouse/entities/warehouse.entity';
 import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
 
 @Injectable()
@@ -170,6 +170,10 @@ export class ProductsService {
     return await this.productRepository.find({
       relations: ['productVariants', 'productVariants.stockItems'],
     });
+  }
+
+  async getAllProductVariants(): Promise<ProductVariant[]> {
+    return await this.productVariantRepository.find();
   }
 
   async findOne(id: number): Promise<Product> {

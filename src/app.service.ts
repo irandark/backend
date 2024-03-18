@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Category } from './category/entities/category.entity';
 import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
-import { Warehouse } from './products/entities/warehouse.entity';
+import { Warehouse } from './warehouse/entities/warehouse.entity';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -23,10 +23,12 @@ export class AppService implements OnModuleInit {
   private async createInitialCategories() {
     const initialCategories = [{ name: 'Велосипеды' }, { name: 'Аксесуары' }];
     const initialWarehouses = [
-      { name: 'Томилино' },
-      { name: 'Ногинск' },
-      { name: 'Янгеля' },
-      { name: 'Очаково' },
+      { name: 'Очаково', id: 1 },
+      { name: 'Янгеля', id: 2 },
+      { name: 'Ногинск', id: 3 },
+      { name: 'Томилино Вело', id: 4 },
+      { name: 'Томилино Матрица', id: 5 },
+      { name: 'Общее количество', id: 6 },
     ];
 
     await this.saveInitialColumns(initialCategories, this.categoryRepository);

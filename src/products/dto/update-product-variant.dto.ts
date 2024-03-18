@@ -1,5 +1,5 @@
 import { Product } from '../entities/product.entity';
-import { Stock } from '../entities/stock.entity';
+import { Stock } from '../../warehouse/entities/stock.entity';
 
 export class UpdateProductVariantDto {
   price: number;

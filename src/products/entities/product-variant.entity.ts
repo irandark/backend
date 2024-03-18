@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Product } from './product.entity';
-import { Stock } from './stock.entity';
+import { Stock } from '../../warehouse/entities/stock.entity';
 import { nullableStringColumn } from '../lib/nullableStringColumn';
 
 @Entity()

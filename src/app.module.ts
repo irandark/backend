@@ -2,7 +2,6 @@ import { AuthService } from './auth/auth.service';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UpdateProductsModule } from './update-products/update-products.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './products/products.module';
@@ -14,13 +13,13 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { User } from './user/entities/user.entity';
-import { Warehouse } from './products/entities/warehouse.entity';
+import { Warehouse } from './warehouse/entities/warehouse.entity';
+import { WarehouseModule } from './warehouse/warehouse.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Category, User, Warehouse]),
     ConfigModule.forRoot(),
-    UpdateProductsModule,
     MulterModule.register({
       dest: './uploads',
     }),
@@ -41,6 +40,7 @@ import { Warehouse } from './products/entities/warehouse.entity';
     AuthModule,
     UserModule,
     JwtModule,
+    WarehouseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

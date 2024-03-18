@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ProductVariant } from './product-variant.entity';
+import { ProductVariant } from '../../products/entities/product-variant.entity';
 import { Warehouse } from './warehouse.entity';
 
 @Entity()
