@@ -7,10 +7,17 @@ import { Product } from 'src/products/entities/product.entity';
 import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 import { ProductsService } from 'src/products/products.service';
 import { ProductVariant } from 'src/products/entities/product-variant.entity';
+import { Stock } from './entities/stock.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product, Category, Subcategory, ProductVariant]),
+    TypeOrmModule.forFeature([
+      Product,
+      Category,
+      Subcategory,
+      ProductVariant,
+      Stock,
+    ]),
   ],
   controllers: [WarehouseController],
   providers: [WarehouseService, ProductsService],

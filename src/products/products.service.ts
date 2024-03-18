@@ -7,26 +7,19 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { DataSource, In, Repository, getConnection, getManager } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Category } from 'src/category/entities/category.entity';
 import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 import { FilterProductsDto } from './dto/filter-products.dto';
 import { ProductVariant } from './entities/product-variant.entity';
-import { Stock } from '../warehouse/entities/stock.entity';
-import { Warehouse } from '../warehouse/entities/warehouse.entity';
-import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-    @InjectRepository(Product)
+    @InjectRepository(ProductVariant)
     private readonly productVariantRepository: Repository<ProductVariant>,
-    @InjectRepository(Product)
-    private readonly stockRepository: Repository<Stock>,
-    @InjectRepository(Product)
-    private readonly warehouseRepository: Repository<Warehouse>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Subcategory)

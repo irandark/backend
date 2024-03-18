@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProductVariant } from 'src/products/entities/product-variant.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { ProductsService } from 'src/products/products.service';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import * as XLSX from 'xlsx';
+import { Stock } from './entities/stock.entity';
 
 @Injectable()
 export class WarehouseService {
@@ -12,6 +13,9 @@ export class WarehouseService {
     private readonly productsService: ProductsService,
     @InjectRepository(Product)
     private readonly productVariantRepository: Repository<ProductVariant>,
+    @InjectRepository(Stock)
+    private readonly stockRepository: Repository<Stock>,
+    private dataSource: DataSource,
   ) {}
   async updatingStockViaExcel(file: Express.Multer.File) {
     const workbook = XLSX.read(file.buffer);
@@ -26,11 +30,13 @@ export class WarehouseService {
 
     const productVariantsFromDb =
       await this.productsService.getAllProductVariants();
-    console.log(productVariantsFromDb);
-    //const matchProducts = await this.matchProducts(
-    //  productsFromXsl,ar
-    //  productsFromDb,
-    // );
+    //console.log(productVariantsFromDb);
+    const resultMatchArticles = await this.matchArticles(
+      stockInfoFromXls,
+      productVariantsFromDb,
+    );
+
+    await this.updateStock(resultMatchArticles);
 
     // return this.buildResponse(matchProducts);
   }
@@ -61,19 +67,43 @@ export class WarehouseService {
     return stockInfo;
   }
 
-  private async matchProducts(
-    productsFromXsl: Map<string, number>,
-    productsFromDb,
+  private async matchArticles(
+    stockInfoFromXls: any,
+    productVariantsFromDb: any,
   ) {
-    const res = {};
+    const res = [];
 
-    for (const { article } of productsFromDb) {
-      if (productsFromXsl.has(article)) {
-        res[article] = productsFromXsl.get(article);
+    for (const { article } of productVariantsFromDb) {
+      if (stockInfoFromXls.has(article)) {
+        res.push({
+          article,
+          stockInfo: stockInfoFromXls.get(article),
+        });
       }
     }
 
     return res;
+  }
+
+  private async updateStock(resultMatchArticles: any) {
+    //console.log(resultMatchArticles);
+
+    await this.dataSource.transaction(async (manager) => {
+      resultMatchArticles.forEach(({ article, stockInfo }) => {
+        /*  const busyStockItem = this.stockRepository.findOne({
+          where: { productVariant: { article } },
+        }); */
+        for (const { warehouseId, quantity } of stockInfo) {
+          manager.save(
+            this.stockRepository.create({
+              productVariant: { article },
+              quantity,
+              warehouse: { id: warehouseId },
+            }),
+          );
+        }
+      });
+    });
   }
 
   private async buildResponse(matchProducts) {
