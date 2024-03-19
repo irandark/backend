@@ -28,7 +28,6 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto) {
-    console.log(createProductDto);
     try {
       if (
         createProductDto.productVariants.length === 0 ||
@@ -105,10 +104,12 @@ export class ProductsService {
           }
         });
       } else {
+        throw new BadRequestException(
+          `Товар с именем ${createProductDto.name} занят`,
+        );
       }
     } catch (error) {
-      console.log(error);
-      throw new BadRequestException(error.detail);
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -121,8 +122,6 @@ export class ProductsService {
       orderBy = 'price',
       orderDirection = 'ASC',
     } = filterDto;
-
-    console.log(filterDto);
 
     const safeOrderBy = this.getSafeOrderByValue(orderBy);
     orderDirection.toUpperCase();
@@ -209,8 +208,6 @@ export class ProductsService {
         throw new NotFoundException(`Товар с id ${id} не найден`);
       }
 
-      console.log(product);
-
       let category: Category;
       let subcategories: Subcategory[];
 
@@ -235,8 +232,6 @@ export class ProductsService {
           })
           .getMany();
       }
-
-      console.log('subcategories', subcategories);
 
       product.brakeName = updateProductDto.brakeName;
       product.brakeType = updateProductDto.brakeType;

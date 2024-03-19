@@ -26,8 +26,8 @@ export class AppService implements OnModuleInit {
       { name: 'Очаково', id: 1 },
       { name: 'Янгеля', id: 2 },
       { name: 'Ногинск', id: 3 },
-      { name: 'Томилино Вело', id: 4 },
-      { name: 'Томилино Матрица', id: 5 },
+      { name: 'Томилино Матрица', id: 4 },
+      { name: 'Томилино Вело', id: 5 },
       { name: 'Общее количество', id: 6 },
     ];
 

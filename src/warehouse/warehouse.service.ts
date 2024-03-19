@@ -23,22 +23,17 @@ export class WarehouseService {
       workbook.Sheets[workbook.SheetNames[0]],
     );
 
-    //console.log(json);
-
     const stockInfoFromXls = this.convertJsonToMap(json);
-    //console.log(stockInfoFromXls);
 
     const productVariantsFromDb =
       await this.productsService.getAllProductVariants();
-    //console.log(productVariantsFromDb);
+
     const resultMatchArticles = await this.matchArticles(
       stockInfoFromXls,
       productVariantsFromDb,
     );
 
     await this.updateStock(resultMatchArticles);
-
-    // return this.buildResponse(matchProducts);
   }
 
   private convertJsonToMap(json: unknown[]) {
@@ -86,33 +81,29 @@ export class WarehouseService {
   }
 
   private async updateStock(resultMatchArticles: any) {
-    //console.log(resultMatchArticles);
-
     await this.dataSource.transaction(async (manager) => {
-      resultMatchArticles.forEach(({ article, stockInfo }) => {
-        /*  const busyStockItem = this.stockRepository.findOne({
-          where: { productVariant: { article } },
-        }); */
+      for (const { article, stockInfo } of resultMatchArticles) {
         for (const { warehouseId, quantity } of stockInfo) {
-          manager.save(
-            this.stockRepository.create({
+          const concurrencyStockItem = await manager.findOne(Stock, {
+            where: {
               productVariant: { article },
+              warehouse: { id: warehouseId },
+            },
+            relations: ['warehouse'],
+          });
+          if (concurrencyStockItem) {
+            await manager.update(Stock, concurrencyStockItem.id, { quantity });
+          } else {
+            const newStockItem = manager.create(Stock, {
               quantity,
               warehouse: { id: warehouseId },
-            }),
-          );
-        }
-      });
-    });
-  }
+              productVariant: { article },
+            });
 
-  private async buildResponse(matchProducts) {
-    try {
-      return JSON.stringify(matchProducts);
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw new NotFoundException('Products not found');
+            await manager.save(newStockItem);
+          }
+        }
       }
-    }
+    });
   }
 }

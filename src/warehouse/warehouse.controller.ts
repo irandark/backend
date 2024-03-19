@@ -19,7 +19,6 @@ export class WarehouseController {
   @Post('update-stock')
   @UseInterceptors(FileInterceptor('file'))
   async updatingStockViaExcel(@UploadedFile() file: Express.Multer.File) {
-    console.log('boom');
     return await this.warehouseService.updatingStockViaExcel(file);
   }
 }
