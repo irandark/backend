@@ -132,7 +132,8 @@ export class ProductsService {
       .innerJoin('subcategory.category', 'category')
       .where('category.id = :categoryId', { categoryId })
       .leftJoinAndSelect('product.productVariants', 'variant')
-      .leftJoinAndSelect('variant.stockItems', 'stock');
+      .leftJoinAndSelect('variant.stockItems', 'stock')
+      .leftJoinAndSelect('stock.warehouse', 'warehouseId');
 
     if (subcategoryIds && subcategoryIds.length > 0) {
       query.andWhere('subcategory.id IN (:...subcategoryIds)', {
