@@ -55,10 +55,17 @@ export class SubcategoryService {
   async remove(id: number) {
     const subcategory = await this.subcategoryRepository.findOne({
       where: { id },
+      relations: ['products'],
     });
 
     if (!subcategory) {
-      throw new BadRequestException('subcategory not found');
+      throw new BadRequestException('Подкатегория не найдена');
+    }
+
+    if (subcategory.products.length > 0) {
+      throw new BadRequestException(
+        'Есть товары, которые принадлежат данной подкатегории',
+      );
     }
 
     await this.subcategoryRepository.delete(id);
